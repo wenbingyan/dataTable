@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<script>
+	//
+		var t = $('#safeListTable').dataTable().api();
+        t.rows().remove().draw();
+        for(var i=0;i<jsonData.length;i++){
+            var col1Val ;                
+             t.row.add( [
+                 jsonData[i]['name'],
+                 col1Val,
+                 col3Val
+             ] );
+        }
+        t.draw();
+        
+        
+    //分页
+    	$('#sandBoxListTable').dataTable( {
+        "ordering":true,
+        "filter":true,
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url:serverRoot+"/APTMng/loadSandboxAction.php",
+            type: "GET",
+            data:{"companyUID":g_company_id}
+        },
+        "columns": [
+                {"data": "path"},
+                {"data": "sha256"},
+                {"data": "category"},
+                {"data": "ts"}
+        ],
+        "columnDefs": [
+                {
+                        "targets": [0],
+                        "data": "path",
+                        "render": function(data, type, full) {
+                                var name = data+'';
+                                var nameArr = name.split('\\');
+                                var num = nameArr.length-1;
+                                console.log(nameArr+'&'+num);
+                                return  nameArr[num];
+                        }
+                },
+                {
+                        "targets": [1],
+                        "data": "sha256",
+                        "render": function(data, type, full) {
+                                return  '<tt>'+data+'</tt>';
+                        }
+                },
+                {
+                        "targets": [2],
+                        "data": "category",
+                        "render": function(data, type, full) {
+                                
+                        }
+                },
+                {
+                        "targets": [4],
+                        "data": "sha256",
+                        "render": function(data, type, full) {
+                                var colVal = '';
+                                if(full['category']!=1 && full['category']!=100 && full['status']!=7){
+                                    colVal = '<i class="fa fa-sign-out execClass permissionCheck" onclick="updataLastActionTime();doConfirm(\'取消沙箱检测\',\'是否取消该文件的沙箱检测？\',\'runAjaxAction(\\\'cancelSandbox\\\',[\\\''+data+'\\\',\\\''+full['source']+'\\\']);\');" title="取消沙箱检测" style="cursor:pointer;"></i>';
+                                }
+                                return  colVal;
+                        }
+                }
+        ],
+        "fnDrawCallback": function(){
+            freshButtons();
+            bindSelectedRowClass();
+            console.log(hasError);
+            if(hasError){
+                $('.resetStatusClass').show();
+            }else{
+                $('.resetStatusClass').hide();
+            }
+            if(isAdmin!=1){
+                $('.permissionCheck').hide();
+            }
+        },
+        "language": {"infoFiltered": ""}
+    } );
+    $('#sandBoxListTable_filter input').first().hide();
+    $('#sandBoxListTable_filter label').append('<input class="form-control input-sm" id="searchStr" value="" type="text" maxlength="300" onkeypress="doFilter(event);"/>');
+	</script>
+	<body>
+		<div class="datalist" >
+            <table id="safeListTable" datatable="" class="table table-striped table-bordered table-hover dataTables-example">
+                <thead>
+                    <tr>
+                        <th>模板名称</th>
+                        <th>模板状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+	</body>
+</html>
+<script type="text/javascript">
+
+	$("#sandBoxListTable").dataTable( {  
+        "aoColumnDefs": [ { "bSortable": false, "aTargets": [ 4 ] }],
+        //"scrollY": scrollY,
+            "order": [[ 3, "desc" ]]
+        }); 
+    $('#sandBoxListTable_filter input').first().hide();
+    $('#sandBoxListTable_filter label').append('<input class="form-control input-sm" id="searchStr" value="" type="text" maxlength="300" onkeypress="doFilter(event);"/>');
+	
+</script>
